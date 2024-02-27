@@ -14,6 +14,13 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname,'public', 'index.html'));
 });
 
+
+
+app.get('/ytmp3', (req,res) => {
+    res.sendFile(path.join(__dirname,'public', 'ytmp3.html'));
+});
+
+
 //this was for testing
 app.get('/download', (req, res) => {
     const videoUrl = 'http://www.youtube.com/watch?v=aqz-KE-bpKQ';
