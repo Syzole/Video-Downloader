@@ -40,6 +40,20 @@ app.get('/download', (req, res) => {
     });
 });
 
+app.post('/convertToMp3', express.json(), (req, res) => {
+    const videoUrl = req.body.url;
+    const info = ytdl.getInfo(videoUrl);
+    const audioStream = ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
+    const filePath = path.join(downloadDirectory, `${info.videoDetails.title}.mp3`);
+    const fileWriteStream = fs.createWriteStream(filePath);
+    audioStream.pipe(fileWriteStream);
+
+    fileWriteStream.on('finish', () => {
+        res.json({ success: true });
+    });
+
+});
+
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
