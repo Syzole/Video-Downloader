@@ -9,7 +9,7 @@ const port = 3000;
 app.use(express.static('public'));
 
 const __dirname = path.resolve();
-//const downloadDirectory = path.join(__dirname, 'downloads');// Specify your desired download directory
+const downloadDirectory = path.join(__dirname, 'downloads');// Specify your desired download directory
 console.log(__dirname);
 
 app.get('/', (req, res) => {
@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
 
 
 app.get('/ytmp3', (req,res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'ytmp3.html'));
 });
 
 
