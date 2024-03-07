@@ -6,6 +6,11 @@ function convert() {
         return;
     }
 
+    //disable all mouse and keyboard events until the conversion is complete
+    document.getElementById("url").disabled = true;
+    document.getElementById("convert").disabled = true;
+
+
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/convertToMp3", false);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -16,4 +21,8 @@ function convert() {
     } else {
         alert("Conversion failed");
     }
+
+    //enable all mouse and keyboard events
+    document.getElementById("url").disabled = false;
+    document.getElementById("convert").disabled = false;
 }

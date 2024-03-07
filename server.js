@@ -2,6 +2,7 @@ const express = require('express');
 const ytdl = require('ytdl-core');
 const fs = require('fs');
 const path = require('path');
+const ID3Writer = require('browser-id3-writer');
 
 const app = express();
 const port = 3000;
@@ -41,17 +42,22 @@ app.get('/download', (req, res) => {
 });
 
 app.post('/convertToMp3', express.json(), async (req, res) => {
+    //First part is get the url from the request
     const videoUrl = req.body.url;
     const info = await ytdl.getInfo(videoUrl);
     const audioStream = ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
-    console.log(info.videoDetails.title);
+    console.log(info);
     const filePath = path.join(downloadDirectory, 'mp3', `${info.videoDetails.title}.mp3`);
     const fileWriteStream = fs.createWriteStream(filePath);
     audioStream.pipe(fileWriteStream);
 
+    //convert to mp3
     fileWriteStream.on('finish', () => {
         res.json({ success: true });
     });
+
+    //now write metadata to the file
+
 
 });
 
