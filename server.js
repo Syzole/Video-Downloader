@@ -40,11 +40,12 @@ app.get('/download', (req, res) => {
     });
 });
 
-app.post('/convertToMp3', express.json(), (req, res) => {
+app.post('/convertToMp3', express.json(), async (req, res) => {
     const videoUrl = req.body.url;
-    const info = ytdl.getInfo(videoUrl);
+    const info = await ytdl.getInfo(videoUrl);
     const audioStream = ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
-    const filePath = path.join(downloadDirectory, `${info.videoDetails.title}.mp3`);
+    console.log(info.videoDetails.title);
+    const filePath = path.join(downloadDirectory, 'mp3', `${info.videoDetails.title}.mp3`);
     const fileWriteStream = fs.createWriteStream(filePath);
     audioStream.pipe(fileWriteStream);
 
