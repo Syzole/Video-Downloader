@@ -28,7 +28,7 @@ app.post('/convertToMp3', express.json(), async (req, res) => {
     const videoUrl = req.body.url;
     const info = await ytdl.getInfo(videoUrl);
     const audioStream = ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
-    console.log(info);
+    console.log(info.videoDetails.thumbnails[0]);
     const filePath = path.join(downloadDirectory, 'mp3', `${info.videoDetails.title}.mp3`);
     const fileWriteStream = fs.createWriteStream(filePath);
     audioStream.pipe(fileWriteStream);
