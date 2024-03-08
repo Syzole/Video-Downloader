@@ -7,11 +7,14 @@
     <link rel="stylesheet" href="styles/ytmp3.css">
     <script src="js/ytmp3.js"></script>
 </head>
-<body>
+<body onload=init()>
     <h2>YT to mp3</h2>
     <h1>Enter the URL of the video you want to convert to a mp3</h1>
     <input type="text" id="url" name="url" placeholder="URL" autocomplete="off">
     <button id = "convert" onclick="convert()">Convert</button>
+    <h3>Files all ready downloaded</h3>
+    <div id ="files"></div><!-- <--!//this is where the files will be displayed> -->
+    
 </body>
 
 </html>

@@ -43,6 +43,11 @@ app.post('/convertToMp3', express.json(), async (req, res) => {
 
 });
 
+app.get('/getMp3Files', (req, res) => {
+    const mp3Files = fs.readdirSync(path.join(downloadDirectory, 'mp3'));
+    res.json({ files: mp3Files });
+});
+
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
