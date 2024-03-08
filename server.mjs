@@ -39,7 +39,10 @@ app.post('/convertToMp3', express.json(), async (req, res) => {
     });
 
     //now write metadata to the file
-
+    fileWriteStream.on('close', () => {
+        const writer = new ID3Writer(fs.readFileSync(filePath));
+        
+    });
 
 });
 
