@@ -9,6 +9,14 @@ const port = 3000;
 app.use(express.static('public'));
 
 const __dirname = path.resolve();
+//check if the download directory exists and the mp3, mp4 and spotify subdirectories
+if (!fs.existsSync(path.join(__dirname, 'downloads'))) {
+    fs.mkdirSync(path.join(__dirname, 'downloads'));
+    fs.mkdirSync(path.join(__dirname, 'downloads', 'mp3'));
+    fs.mkdirSync(path.join(__dirname, 'downloads', 'mp4'));
+    fs.mkdirSync(path.join(__dirname, 'downloads', 'spotify'));
+}
+
 const downloadDirectory = path.join(__dirname, 'downloads');// Specify your desired download directory
 console.log(__dirname);
 
