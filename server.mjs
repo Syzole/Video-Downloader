@@ -33,12 +33,12 @@ app.get('/ytmp3', (req,res) => {
 
 app.post('/convertToMp3', express.json(), async (req, res) => {
     //First part is get the url from the request
-    const videoUrl = req.body.url;
-    const info = await ytdl.getInfo(videoUrl);
-    const audioStream = ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
+    let videoUrl = req.body.url;
+    let info = await ytdl.getInfo(videoUrl);
+    let audioStream = ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
     console.log(info.videoDetails.thumbnails[0]);
-    const filePath = path.join(downloadDirectory, 'mp3', `${info.videoDetails.title}.mp3`);
-    const fileWriteStream = fs.createWriteStream(filePath);
+    let filePath = path.join(downloadDirectory, 'mp3', `${info.videoDetails.title}.mp3`);
+    let fileWriteStream = fs.createWriteStream(filePath);
     audioStream.pipe(fileWriteStream);
 
     //convert to mp3
