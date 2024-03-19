@@ -3,6 +3,7 @@ import ytdl from 'ytdl-core';
 import fs from 'fs';
 import path from 'path';
 import { ID3Writer } from 'browser-id3-writer';
+import * as youtubeSearch from 'youtube-search';
 const app = express();
 const port = 3000;
 
