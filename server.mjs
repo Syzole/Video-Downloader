@@ -49,8 +49,14 @@ app.post('/convertToMp3', express.json(), async (req, res) => {
 
     //now write metadata to the file
     fileWriteStream.on('close', () => {
-        const writer = new ID3Writer(fs.readFileSync(filePath));
-        
+        let writer = new ID3Writer(fs.readFileSync(filePath));
+        writer.setFrame('TIT2', info.videoDetails.title)
+            .setFrame('TPE1', [info.videoDetails.author.name])
+            .setFrame('APIC', {
+                type: 3,
+                data: fs.readFileSync(info.videoDetails.thumbnails[0].url),
+                description: 'YouTube thumbnail'
+            });
     });
 
 });
