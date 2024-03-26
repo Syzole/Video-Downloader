@@ -4,7 +4,7 @@ import fs, { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import ffmpegPath from 'ffmpeg-static';
-
+import { ID3Writer } from 'browser-id3-writer';
 
 
 const app = express();
@@ -38,27 +38,44 @@ app.post('/convertToMp3', express.json(), async (req, res) => {
     //First part is get the url from the request
     let videoUrl = req.body.url;
     let info = await ytdl.getInfo(videoUrl);
-    let audioStream = ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
-    console.log(info.videoDetails.thumbnails[0]);
-    let filePath = path.join(downloadDirectory, 'mp3', `${info.videoDetails.title}.mp3`);
-    let fileWriteStream = fs.createWriteStream(filePath);
-    audioStream.pipe(fileWriteStream);
+    let audioStream = await ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
 
-    //convert to mp3
-    fileWriteStream.on('finish', () => {
-        res.json({ success: true });
+    let fileName = info.videoDetails.title;
+    let filePath = path.join(downloadDirectory, 'mp3', `${fileName}.mp3`);
+
+    const ffmpeg = spawn(ffmpegPath, [
+        '-i', 'pipe:0', // Use pipe to read input from stdin
+        '-codec:a', 'libmp3lame', // Set the audio codec to MP3
+        '-q:a', '0', // Set the audio quality (0 is the highest quality)
+        filePath // Output file path
+    ]);
+
+    audioStream.pipe(ffmpeg.stdin);
+
+    // Handle ffmpeg process events
+    ffmpeg.on('error', err => {
+        console.error('Error running ffmpeg:', err);
+        res.json({ success: false, error: 'An error occurred while converting the audio.' });
     });
-
-    //now write metadata to the file
-    fileWriteStream.on('close', () => {
-        //TODO: fix the writing to tags
-        //gonna do few console.log, make sure they work
+  
+    ffmpeg.on('close', () => {
+        console.log('Audio conversion completed successfully.');
+        let songBuffer = readFileSync(filePath);
+        let writer = new ID3Writer(songBuffer);
 
         console.log(info.videoDetails.title);
         console.log(info.videoDetails.author.name);
-        console.log(info.videoDetails.thumbnails[0].url);
 
+        writer.setFrame('TIT2', info.videoDetails.title)
+            .setFrame('TPE1', [info.videoDetails.author.name])
+            .setFrame('TALB', info.videoDetails.title);
+        res.json({ success: true });
+        writer.addTag();
+
+        let taggedSongBuffer = Buffer.from(writer.arrayBuffer);
+        writeFileSync(filePath, taggedSongBuffer);
     });
+
 
 });
 
