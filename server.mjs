@@ -1,9 +1,12 @@
 import express from 'express';
 import ytdl from 'ytdl-core';
-import fs from 'fs';
+import fs, { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
-import { ID3Writer } from 'browser-id3-writer';
-import * as youtubeSearch from 'youtube-search';
+import { spawn } from 'child_process';
+import ffmpegPath from 'ffmpeg-static';
+
+
+
 const app = express();
 const port = 3000;
 
@@ -19,7 +22,6 @@ if (!fs.existsSync(path.join(__dirname, 'downloads'))) {
 }
 
 const downloadDirectory = path.join(__dirname, 'downloads');// Specify your desired download directory
-console.log(__dirname);
 
 app.get('/', (req, res) => {
     res.sendFile('index.html');
@@ -49,14 +51,13 @@ app.post('/convertToMp3', express.json(), async (req, res) => {
 
     //now write metadata to the file
     fileWriteStream.on('close', () => {
-        let writer = new ID3Writer(fs.readFileSync(filePath));
-        writer.setFrame('TIT2', info.videoDetails.title)
-            .setFrame('TPE1', [info.videoDetails.author.name])
-            .setFrame('APIC', {
-                type: 3,
-                data: fs.readFileSync(info.videoDetails.thumbnails[0].url),
-                description: 'YouTube thumbnail'
-            });
+        //TODO: fix the writing to tags
+        //gonna do few console.log, make sure they work
+
+        console.log(info.videoDetails.title);
+        console.log(info.videoDetails.author.name);
+        console.log(info.videoDetails.thumbnails[0].url);
+
     });
 
 });
@@ -66,7 +67,20 @@ app.get('/getMp3Files', (req, res) => {
     res.json({ files: mp3Files });
 });
 
+//gonna make a test function to write metadata to the mp3 file
+//gonna use the browser-id3-writer library
+
+app.get('/test', (req, res) => {
+    let pathToSong = path.join(downloadDirectory, 'mp3', 'Last Surprise.mp3');
+    console.log(pathToSong);
+    const songBuffer = readFileSync(pathToSong);
+    
+   
+});
+
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
+
+
 
