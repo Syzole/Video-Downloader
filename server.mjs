@@ -84,16 +84,6 @@ app.get('/getMp3Files', (req, res) => {
     res.json({ files: mp3Files });
 });
 
-//gonna make a test function to write metadata to the mp3 file
-//gonna use the browser-id3-writer library
-
-app.get('/test', (req, res) => {
-    let pathToSong = path.join(downloadDirectory, 'mp3', 'Last Surprise.mp3');
-    console.log(pathToSong);
-    const songBuffer = readFileSync(pathToSong);
-    
-   
-});
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
