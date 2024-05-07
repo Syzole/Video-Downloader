@@ -5,7 +5,8 @@ import path from 'path';
 import { spawn } from 'child_process';
 import ffmpegPath from 'ffmpeg-static';
 import { ID3Writer } from 'browser-id3-writer';
-
+import axios from 'axios';
+import sharp from 'sharp';
 
 const app = express();
 const port = 3000;
@@ -37,6 +38,8 @@ app.get('/ytmp3', (req,res) => {
 app.post('/convertToMp3', express.json(), async (req, res) => {
     //First part is get the url from the request
     let videoUrl = req.body.url;
+
+    //Get the video info
     let info = await ytdl.getInfo(videoUrl);
     let audioStream = await ytdl(videoUrl, { quality: 'highest', filter: 'audioonly' });
 
@@ -58,22 +61,35 @@ app.post('/convertToMp3', express.json(), async (req, res) => {
         res.json({ success: false, error: 'An error occurred while converting the audio.' });
     });
   
-    ffmpeg.on('close', () => {
+    ffmpeg.on('close', async () => {
         console.log('Audio conversion completed successfully.');
         let songBuffer = readFileSync(filePath);
         let writer = new ID3Writer(songBuffer);
 
-        console.log(info.videoDetails.title);
-        console.log(info.videoDetails.author.name);
+        // console.log(info.videoDetails.title);
+        // console.log(info.videoDetails.author.name);
+
+        let thumbnailURL = info.videoDetails.thumbnails[0].url;
+        let thumbnail = await axios.get(thumbnailURL, { responseType: 'arraybuffer' });
+        let thumbnailBuffer = Buffer.from(thumbnail.data);
+
+        // Convert the thumbnail to jpeg and get the buffer of that
+        let jpegBuffer = await sharp(thumbnailBuffer).jpeg().toBuffer();
 
         writer.setFrame('TIT2', info.videoDetails.title)
             .setFrame('TPE1', [info.videoDetails.author.name])
-            .setFrame('TALB', info.videoDetails.title);
+            .setFrame('TALB', info.videoDetails.title)
+            .setFrame('TPE2', info.videoDetails.author.name)
+            .setFrame('APIC', {
+                type: 3,
+                data: jpegBuffer,
+                description: 'Thumbnail'
+            });
         res.json({ success: true });
         writer.addTag();
 
         let taggedSongBuffer = Buffer.from(writer.arrayBuffer);
-        writeFileSync(filePath, taggedSongBuffer);
+        await writeFileSync(filePath, taggedSongBuffer);
     });
 
 
