@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "http-server -c-1 -p 8081"
+    "start": "http-server -c-1 -p 8081",
+	"run": "node server.mjs"
   },
   "dependencies": {
     "axios": "^1.6.8",
