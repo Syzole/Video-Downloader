@@ -103,6 +103,14 @@ app.post("/convertToMp3", express.json(), async (req, res) => {
 	});
 });
 
+app.post("/convertToMp4", express.json(), async (req, res) => {
+	let videoUrl = req.body.url;
+	let info = await ytdl.getInfo(videoUrl);
+	let fileName = info.videoDetails.title;
+	let filePath = path.join(downloadDirectory, "mp4", `${fileName}.mp4`);
+	
+});
+
 app.get("/getMp3Files", (req, res) => {
 	const mp3Files = fs.readdirSync(path.join(downloadDirectory, "mp3"));
 	res.json({ files: mp3Files });
