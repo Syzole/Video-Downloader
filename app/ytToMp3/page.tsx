@@ -1,3 +1,11 @@
+'use client';
+
 export default function Page() {
-	return <h1>TODO</h1>;
+	return (
+		<div className="flex justify-center">
+			<button className="btn btn-neutral">Test</button>
+		</div>
+	);
 }
+
+
