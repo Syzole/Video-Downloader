@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 
 import ytdl from "ytdl-core";
-import fs, { readFileSync, writeFileSync } from "fs";
+import fs, { readFileSync, stat, writeFileSync } from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
@@ -23,18 +23,12 @@ if (!fs.existsSync(directName)) {
 	fs.mkdirSync(path.join(directName, "spotify"));
 }
 
-export async function GET(
-	req: Request,
-	{ params }: { params: { id: string } }
-) {
+export async function GET(req: Request, { params }: { params: { id: string } }) {
 	const id = params.id;
 	return NextResponse.json({ id: id });
 }
 
-export async function POST(
-	req: Request,
-	{ params }: { params: { id: string } }
-) {
+export async function POST(req: Request, { params }: { params: { id: string } }) {
 	const id = params.id;
 	console.log(id);
 
@@ -42,13 +36,10 @@ export async function POST(
 		case "downloadMP3":
 			const { url } = await req.json();
 			if (!url) {
-				return NextResponse.json(
-					{ error: "Please enter a URL" },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: "Please enter a URL" }, { status: 400 });
 			}
-			await downloadMP3(url);
-			return NextResponse.json({ message: "Downloaded MP3" }, { status: 200 });
+			let response = await downloadMP3(url);
+			return NextResponse.json({message: response.message}, { status: response.status });
 		default:
 			console.log("Invalid ID");
 			return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
@@ -58,5 +49,11 @@ export async function POST(
 
 async function downloadMP3(url: string) {
 	console.log(url);
-	return "this is more of a placeholder for now";
+
+	//first check if the URL is valid
+	if (!ytdl.validateURL(url)) {
+		return { message: "Invalid URL", status: 400 };
+	}
+
+	return { message: "Yay URL", status: 200 };
 }

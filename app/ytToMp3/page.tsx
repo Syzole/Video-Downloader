@@ -1,5 +1,6 @@
 "use client";
 
+//first set up page
 export default function Page() {
 	return (
 		<div className="flex flex-col justify-center p-8">
@@ -16,10 +17,22 @@ export default function Page() {
 				<a
 					href="https://www.youtube.com/"
 					className="text-blue-600"
+					onClickCapture={(e) => e.preventDefault()}
+					onClick={(e) => window.open(e.currentTarget.href, "_blank")}
 				>
 					{" "}
 					Youtube
 				</a>{" "}
+				or a{" "}
+				<a
+					href="https://www.youtube.com/"
+					className="text-blue-600"
+					onClickCapture={(e) => e.preventDefault()}
+					onClick={(e) => window.open(e.currentTarget.href, "_blank")}
+				>
+					{" "}
+					Youtube Music{" "}
+				</a>
 				URL and it will be converted to an MP3 file ready to downloaded
 			</h1>
 			<input
@@ -31,6 +44,7 @@ export default function Page() {
 			<button
 				className="btn btn-accent justify-center mb-4"
 				onClick={Download}
+				id="downloadButton"
 			>
 				{" "}
 				Download
@@ -39,6 +53,7 @@ export default function Page() {
 	);
 }
 
+//this function is used to test the API and other features
 async function Test() {
 	let test = await fetch("/api/convertToMp3/test", {
 		method: "GET",
@@ -47,14 +62,23 @@ async function Test() {
 	console.log(json);
 }
 
+//this function is called when the download button is clicked sending the URL to the server for processing
 async function Download() {
-	let url = (document.getElementById("ytUrl") as HTMLInputElement).value;
+	let urlBox = document.getElementById("ytUrl") as HTMLInputElement;
+	let downloadButton = document.getElementById("downloadButton") as HTMLButtonElement;
+
+	//disable the input and button while the request is being processed
+	urlBox.disabled = true;
+	downloadButton.disabled = true;
+
+	let url = urlBox.value;
 	console.log(url);
+
 	if (!url) {
 		alert("Please enter a URL");
 		return;
 	}
-	
+
 	let response = await fetch("/api/convertToMp3/downloadMP3", {
 		method: "POST",
 		body: JSON.stringify({ url }),
@@ -62,13 +86,15 @@ async function Download() {
 			"Content-Type": "application/json",
 		},
 	});
-	
+
 	let json = await response.json();
 	console.log(json);
 	if (json.error) {
 		alert(json.error);
-	}
-	else {
+	} else {
 		alert(json.message);
 	}
+
+	urlBox.disabled = false;
+	downloadButton.disabled = false;
 }
