@@ -37,7 +37,6 @@ export async function POST(
 ) {
 	const id = params.id;
 	console.log(id);
-	console.log(await req.formData());
 
 	switch (id) {
 		case "downloadMP3":

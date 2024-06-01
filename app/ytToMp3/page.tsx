@@ -62,4 +62,13 @@ async function Download() {
 			"Content-Type": "application/json",
 		},
 	});
+	
+	let json = await response.json();
+	console.log(json);
+	if (json.error) {
+		alert(json.error);
+	}
+	else {
+		alert(json.message);
+	}
 }
