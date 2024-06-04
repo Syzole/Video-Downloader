@@ -7,12 +7,16 @@ import fs, { readFileSync, stat, writeFileSync } from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
+import ffmpeg from "fluent-ffmpeg";
 import { ID3Writer } from "browser-id3-writer";
 import axios from "axios";
 import sharp from "sharp";
 import { use } from "react";
 
 const directName = path.resolve("./downloads");
+
+ffmpeg.setFfmpegPath(ffmpegPath!);
+console.log(ffmpeg);
 
 //create the downloads folder if it doesn't exist
 
@@ -39,7 +43,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 				return NextResponse.json({ error: "Please enter a URL" }, { status: 400 });
 			}
 			let response = await downloadMP3(url);
-			return NextResponse.json({message: response.message}, { status: response.status });
+			return NextResponse.json({ message: response.message }, { status: response.status });
+
 		default:
 			console.log("Invalid ID");
 			return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
@@ -48,12 +53,32 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 //helper functions go here
 
 async function downloadMP3(url: string) {
-	console.log(url);
+	//console.log(url);
 
 	//first check if the URL is valid
 	if (!ytdl.validateURL(url)) {
 		return { message: "Invalid URL", status: 400 };
 	}
 
-	return { message: "Yay URL", status: 200 };
+	//get info and auido stream
+	let info = await ytdl.getInfo(url);
+	let audioStream = await ytdl(url, {
+		quality: "highestaudio",
+		filter: "audioonly",
+	});
+
+	//create file and filename
+	let filename = info.videoDetails.title;
+	let filepath = path.join(directName, "mp3", filename + ".mp3");
+
+	//download the audio stream using ffmpeg
+
+	try {
+		//ffmpeg(audioStream)
+	} catch (e) {
+		console.log(e);
+		return { message: "Error", status: 500 };
+	}
+
+	return { message: "Sucess", status: 200 };
 }
