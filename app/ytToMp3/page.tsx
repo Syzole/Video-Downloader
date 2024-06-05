@@ -1,43 +1,64 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 
 //first set up page
 export default function Page() {
 	const [files, setFiles] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [filesToRender, setFilesToRender] = useState<ReactNode>(<h1 className="font-sans text-xl">Loading...</h1>);
 
 	//fetch the files from the server on page load
-	useEffect(function () {
+	useEffect(() => {
 		async function fetchFiles() {
 			try {
 				let files = await GetFiles();
 				setFiles(files);
+				if (files.length === 0) {
+					setFilesToRender(<h1 className="font-sans text-xl">No files have been converted to MP3</h1>);
+				} else {
+					setFilesToRender(
+						<ul>
+							{files.map((file:string, index:number) => (
+								<li
+									key={index}
+									className="font-sans text-xl"
+								>
+									{file}
+								</li>
+							))}
+						</ul>
+					);
+				}
 			} catch (e) {
 				console.error(e);
-			} 		}
+			} finally {
+				setLoading(false); // Set loading to false when fetch completes
+			}
+		}
 		fetchFiles();
 	}, []);
 
-	//Function to render the mp3 files
-	let filesToRender = () => {
-		if (files.length === 0) {
-			return <h1 className="font-sans text-xl">No files have been converted to MP3</h1>;
-		}
+	// filesToRender = () => {
+	// 	if (files.length === 0) {
+	// 		return <h1 className="font-sans text-xl">No files have been converted to MP3</h1>;
+	// 	}
 
-		return (
-			<ul>
-				{files.map((file, index) => (
-					<li
-						key={index}
-						className="font-sans text-xl"
-					>
-						{file}
-					</li>
-				))}
-			</ul>
-		);
-	};
+	// 	return (
+	// 		<ul>
+	// 			{files.map((file, index) => (
+	// 				<li
+	// 					key={index}
+	// 					className="font-sans text-xl"
+	// 				>
+	// 					{file}
+	// 				</li>
+	// 			))}
+	// 		</ul>
+	// 	);
+	// };
+
+	//Function to render the mp3 files
 
 	return (
 		<div className="flex flex-col justify-center p-8">
@@ -88,7 +109,7 @@ export default function Page() {
 			</button>
 			<br />
 			<h1 className="font-sans font-bold justify-start text-xl"> Files that have been converted to MP3</h1>
-			<div className="flex flex-col">{filesToRender()}</div>
+			<div className="flex flex-col">{filesToRender}</div>
 		</div>
 	);
 }
