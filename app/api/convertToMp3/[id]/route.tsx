@@ -1,15 +1,15 @@
 "use server";
 
 import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 import ytdl from "ytdl-core";
-import fs, { readFileSync, stat, writeFileSync } from "fs";
+import fs, { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import ffmpeg from "fluent-ffmpeg";
 import { ID3Writer } from "browser-id3-writer";
 import axios from "axios";
 import sharp from "sharp";
-import { use } from "react";
 
 const directName = path.resolve("./downloads");
 const ffmpegPath = path.resolve("./app/api/ffmpeg/ffmpeg.exe");
@@ -25,12 +25,21 @@ if (!fs.existsSync(directName)) {
 	fs.mkdirSync(path.join(directName, "spotify"));
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req:NextRequest , { params }: { params: { id: string }}) {
 	const id = params.id;
 	switch (id) {
 		case "getFiles":
 			let files = fs.readdirSync(path.join(directName, "mp3"));
 			return NextResponse.json({ files: files }, { status: 200 });
+
+		case "downloadMP3":
+			let file = req.nextUrl.searchParams.get("file");
+			console.log(file);
+			return NextResponse.json({ message: file }, { status: 200 });
+		
+		default:
+			console.log("Invalid ID");
+			return NextResponse.json({ message: id },  { status: 400 });
 	}
 }
 

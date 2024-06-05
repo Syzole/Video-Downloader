@@ -3,39 +3,47 @@
 import { useState, useEffect, ReactNode } from "react";
 
 //first set up page
+
+
 export default function Page() {
 	const [files, setFiles] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [filesToRender, setFilesToRender] = useState<ReactNode>(<h1 className="font-sans text-xl">Loading...</h1>);
-
 	//fetch the files from the server on page load
-	useEffect(() => {
-		async function fetchFiles() {
-			try {
-				let files = await GetFiles();
-				setFiles(files);
-				if (files.length === 0) {
-					setFilesToRender(<h1 className="font-sans text-xl">No files have been converted to MP3</h1>);
-				} else {
-					setFilesToRender(
-						<ul className="list-disc list-inside">
-							{files.map((file: string, index: number) => (
-								<li
-									key={index}
-									className="font-sans text-xl"
+
+	async function fetchFiles() {
+		try {
+			let files = await GetFiles();
+			setFiles(files);
+			if (files.length === 0) {
+				setFilesToRender(<h1 className="font-sans text-xl">No files have been converted to MP3</h1>);
+			} else {
+				setFilesToRender(
+					<ul className="list-disc list-inside">
+						{files.map((file: string, index: number) => (
+							<li
+								key={index}
+								className="font-sans text-xl"
+							>
+								<a
+									href={`/api/convertToMp3/downloadMP3?file=${file}`}
+									className="text-blue-500 hover:underline"
 								>
 									{file}
-								</li>
-							))}
-						</ul>
-					);
-				}
-			} catch (e) {
-				console.error(e);
-			} finally {
-				setLoading(false); // Set loading to false when fetch completes
+								</a>
+							</li>
+						))}
+					</ul>
+				);
 			}
+		} catch (e) {
+			console.error(e);
+		} finally {
+			setLoading(false); // Set loading to false when fetch completes
 		}
+	}
+
+	useEffect(() => {
 		fetchFiles();
 	}, []);
 
@@ -91,6 +99,46 @@ export default function Page() {
 			<div className="flex flex-col">{filesToRender}</div>
 		</div>
 	);
+
+	async function Download() {
+		let urlBox = document.getElementById("ytUrl") as HTMLInputElement;
+		let downloadButton = document.getElementById("downloadButton") as HTMLButtonElement;
+
+		//disable the input and button while the request is being processed
+		urlBox.disabled = true;
+		downloadButton.disabled = true;
+
+		//display a message to the user
+		alert("Your request is being processed. Please wait...");
+
+		let url = urlBox.value;
+		console.log(url);
+
+		if (!url) {
+			alert("Please enter a URL");
+			return;
+		}
+
+		let response = await fetch("/api/convertToMp3/downloadMP3", {
+			method: "POST",
+			body: JSON.stringify({ url }),
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+
+		let json = await response.json();
+		console.log(json);
+		if (json.error) {
+			alert(json.error);
+		} else {
+			alert(json.message);
+		}
+
+		urlBox.disabled = false;
+		downloadButton.disabled = false;
+		fetchFiles();
+	}
 }
 
 //this function is used to test the API and other features
@@ -105,39 +153,4 @@ async function GetFiles() {
 	return files;
 }
 
-//this function is called when the download button is clicked sending the URL to the server for processing
-async function Download() {
-	let urlBox = document.getElementById("ytUrl") as HTMLInputElement;
-	let downloadButton = document.getElementById("downloadButton") as HTMLButtonElement;
 
-	//disable the input and button while the request is being processed
-	urlBox.disabled = true;
-	downloadButton.disabled = true;
-
-	let url = urlBox.value;
-	console.log(url);
-
-	if (!url) {
-		alert("Please enter a URL");
-		return;
-	}
-
-	let response = await fetch("/api/convertToMp3/downloadMP3", {
-		method: "POST",
-		body: JSON.stringify({ url }),
-		headers: {
-			"Content-Type": "application/json",
-		},
-	});
-
-	let json = await response.json();
-	console.log(json);
-	if (json.error) {
-		alert(json.error);
-	} else {
-		alert(json.message);
-	}
-
-	urlBox.disabled = false;
-	downloadButton.disabled = false;
-}
