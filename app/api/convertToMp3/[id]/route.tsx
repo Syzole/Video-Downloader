@@ -25,7 +25,7 @@ if (!fs.existsSync(directName)) {
 	fs.mkdirSync(path.join(directName, "spotify"));
 }
 
-export async function GET(req:NextRequest , { params }: { params: { id: string }}) {
+export async function GET(req:NextRequest , { params }: { params: { id: string }}, res: any) {
 	const id = params.id;
 	switch (id) {
 		case "getFiles":
@@ -35,6 +35,7 @@ export async function GET(req:NextRequest , { params }: { params: { id: string }
 		case "downloadMP3":
 			let file = req.nextUrl.searchParams.get("file");
 			console.log(file);
+			res.download();
 			return NextResponse.json({ message: file }, { status: 200 });
 		
 		default:
