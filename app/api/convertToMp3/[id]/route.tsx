@@ -35,7 +35,8 @@ export async function GET(req:NextRequest , { params }: { params: { id: string }
 		case "downloadMP3":
 			let file = req.nextUrl.searchParams.get("file");
 			console.log(file);
-			return NextResponse.json({ message: file }, { status: 200 });
+			let response = await downloadToComputer(file!);
+			return NextResponse.json({ message: response?.message }, { status: response?.status });
 		
 		default:
 			console.log("Invalid ID");
@@ -130,4 +131,17 @@ async function downloadMP3(url: string) {
 	}
 
 	return { message: "Sucess", status: 200 };
+}
+
+async function downloadToComputer(file: string) {
+	//check if file exsists
+	let filepath = path.join(directName, "mp3", file);
+	if (!fs.existsSync(filepath)) {
+		return { message: "File not found", status: 404 };
+	}
+	//send file to user
+	let fileBuffer = readFileSync(filepath);
+	let fileBlob = new Blob([fileBuffer], { type: "audio/mpeg" });
+	
+	return { message: "Success", status: 200 };
 }
