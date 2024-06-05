@@ -27,7 +27,11 @@ if (!fs.existsSync(directName)) {
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
 	const id = params.id;
-	return NextResponse.json({ id: id });
+	switch (id) {
+		case "getFiles":
+			let files = fs.readdirSync(path.join(directName, "mp3"));
+			return NextResponse.json({ files: files }, { status: 200 });
+	}
 }
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {

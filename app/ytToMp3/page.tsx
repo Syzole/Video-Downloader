@@ -1,12 +1,49 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 //first set up page
 export default function Page() {
+	const [files, setFiles] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	//fetch the files from the server on page load
+	useEffect(function () {
+		async function fetchFiles() {
+			try {
+				let files = await GetFiles();
+				setFiles(files);
+			} catch (e) {
+				console.error(e);
+			} 		}
+		fetchFiles();
+	}, []);
+
+	//Function to render the mp3 files
+	let filesToRender = () => {
+		if (files.length === 0) {
+			return <h1 className="font-sans text-xl">No files have been converted to MP3</h1>;
+		}
+
+		return (
+			<ul>
+				{files.map((file, index) => (
+					<li
+						key={index}
+						className="font-sans text-xl"
+					>
+						{file}
+					</li>
+				))}
+			</ul>
+		);
+	};
+
 	return (
 		<div className="flex flex-col justify-center p-8">
 			<div className="navbar bg-base-100">
 				<a
-					className="btn btn-ghost text-xl"
+					className="btn btn-info text-xl"
 					href="/"
 				>
 					Home
@@ -49,17 +86,23 @@ export default function Page() {
 				{" "}
 				Download
 			</button>
+			<br />
+			<h1 className="font-sans font-bold justify-start text-xl"> Files that have been converted to MP3</h1>
+			<div className="flex flex-col">{filesToRender()}</div>
 		</div>
 	);
 }
 
 //this function is used to test the API and other features
-async function Test() {
-	let test = await fetch("/api/convertToMp3/test", {
+async function GetFiles() {
+	let response = await fetch("/api/convertToMp3/getFiles", {
 		method: "GET",
 	});
-	let json = await test.json();
-	console.log(json);
+
+	let files = (await response.json()).files;
+	//console.log(files);
+
+	return files;
 }
 
 //this function is called when the download button is clicked sending the URL to the server for processing

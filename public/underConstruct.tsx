@@ -1,22 +1,18 @@
 import Link from "next/link";
 
-export default function underConstruct() {
+export default function UnderConstruct() {
 	return (
-		<div>
+		<div className="text-center">
 			<img
 				src="underConstruct.gif"
-				alt="Please come back later still wroking on this"
-				className="w-1/2 mx-auto"
+				alt="Please come back later, still working on this"
+				className="mx-auto w-1/2 h-1/2"
 			/>
-			<h1 className="text-center">
-				Currently Working on other stuff please come back later when this is
-				ready
-			</h1>
+			<h1>Currently working on other stuff. Please come back later when this is ready.</h1>
 			<Link
 				href={"/"}
 				className="btn btn-accent flex justify-center"
 			>
-				{" "}
 				Back to home
 			</Link>
 		</div>
