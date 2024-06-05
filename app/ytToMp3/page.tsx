@@ -25,7 +25,7 @@ export default function Page() {
 				</a>{" "}
 				or a{" "}
 				<a
-					href="https://www.youtube.com/"
+					href="https://music.youtube.com/"
 					className="text-blue-600"
 					onClickCapture={(e) => e.preventDefault()}
 					onClick={(e) => window.open(e.currentTarget.href, "_blank")}
