@@ -2,10 +2,8 @@
 
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import { NextRequest } from "next/server";
 
 import ytdl from "ytdl-core";
-import fs, { readFileSync, writeFileSync } from "fs";
 import fs, { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import ffmpeg from "fluent-ffmpeg";
@@ -27,7 +25,7 @@ if (!fs.existsSync(directName)) {
 	fs.mkdirSync(path.join(directName, "spotify"));
 }
 
-export async function GET(req:NextRequest , { params }: { params: { id: string }}, res: any) {
+export async function GET(req:NextRequest , { params }: { params: { id: string }}) {
 	const id = params.id;
 	switch (id) {
 		case "getFiles":
@@ -37,7 +35,6 @@ export async function GET(req:NextRequest , { params }: { params: { id: string }
 		case "downloadMP3":
 			let file = req.nextUrl.searchParams.get("file");
 			console.log(file);
-			res.download();
 			return NextResponse.json({ message: file }, { status: 200 });
 		
 		default:
