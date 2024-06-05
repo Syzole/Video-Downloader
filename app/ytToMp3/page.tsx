@@ -18,8 +18,8 @@ export default function Page() {
 					setFilesToRender(<h1 className="font-sans text-xl">No files have been converted to MP3</h1>);
 				} else {
 					setFilesToRender(
-						<ul>
-							{files.map((file:string, index:number) => (
+						<ul className="list-disc list-inside">
+							{files.map((file: string, index: number) => (
 								<li
 									key={index}
 									className="font-sans text-xl"
@@ -38,27 +38,6 @@ export default function Page() {
 		}
 		fetchFiles();
 	}, []);
-
-	// filesToRender = () => {
-	// 	if (files.length === 0) {
-	// 		return <h1 className="font-sans text-xl">No files have been converted to MP3</h1>;
-	// 	}
-
-	// 	return (
-	// 		<ul>
-	// 			{files.map((file, index) => (
-	// 				<li
-	// 					key={index}
-	// 					className="font-sans text-xl"
-	// 				>
-	// 					{file}
-	// 				</li>
-	// 			))}
-	// 		</ul>
-	// 	);
-	// };
-
-	//Function to render the mp3 files
 
 	return (
 		<div className="flex flex-col justify-center p-8">
@@ -108,7 +87,7 @@ export default function Page() {
 				Download
 			</button>
 			<br />
-			<h1 className="font-sans font-bold justify-start text-xl"> Files that have been converted to MP3</h1>
+			<h1 className="font-sans font-bold underline justify-start text-xl"> Files that have been converted to MP3</h1>
 			<div className="flex flex-col">{filesToRender}</div>
 		</div>
 	);
