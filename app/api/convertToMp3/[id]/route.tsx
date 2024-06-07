@@ -1,15 +1,14 @@
 "use server";
 
-import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import ytdl from "ytdl-core";
+import axios from "axios";
+import { ID3Writer } from "browser-id3-writer";
+import ffmpeg from "fluent-ffmpeg";
 import fs, { readFileSync, writeFileSync } from "fs";
 import path from "path";
-import ffmpeg from "fluent-ffmpeg";
-import { ID3Writer } from "browser-id3-writer";
-import axios from "axios";
 import sharp from "sharp";
+import ytdl from "ytdl-core";
 
 const directName = path.resolve("./downloads");
 const ffmpegPath = path.resolve("./app/api/ffmpeg/ffmpeg.exe");
@@ -25,7 +24,7 @@ if (!fs.existsSync(directName)) {
 	fs.mkdirSync(path.join(directName, "spotify"));
 }
 
-export async function GET(req:NextRequest , { params }: { params: { id: string }}) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
 	const id = params.id;
 	switch (id) {
 		case "getFiles":
@@ -34,13 +33,16 @@ export async function GET(req:NextRequest , { params }: { params: { id: string }
 
 		case "downloadMP3":
 			let file = req.nextUrl.searchParams.get("file");
-			console.log(file);
-			let response = await downloadToComputer(file!);
-			return NextResponse.json({ message: response?.message }, { status: response?.status });
-		
+			console.log("file name is: " + file);
+			if (!file) {
+				return NextResponse.json({ message: "Not a valid file" }, { status: 400 });
+			}
+			let response = await downloadToComputer(file);
+			return response;
+
 		default:
 			console.log("Invalid ID");
-			return NextResponse.json({ message: id },  { status: 400 });
+			return NextResponse.json({ message: id }, { status: 400 });
 	}
 }
 
@@ -134,14 +136,17 @@ async function downloadMP3(url: string) {
 }
 
 async function downloadToComputer(file: string) {
-	//check if file exsists
 	let filepath = path.join(directName, "mp3", file);
 	if (!fs.existsSync(filepath)) {
 		return { message: "File not found", status: 404 };
 	}
 	//send file to user
 	let fileBuffer = readFileSync(filepath);
-	let fileBlob = new Blob([fileBuffer], { type: "audio/mpeg" });
 	
-	return { message: "Success", status: 200 };
+	let headers = {
+		"Content-Type": "audio/mpeg",
+		"Content-Disposition": `attachment; filename=${file}`
+	};
+
+	return new Response(fileBuffer, { headers: headers });
 }
