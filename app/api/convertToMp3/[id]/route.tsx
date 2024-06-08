@@ -37,12 +37,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 			if (!file) {
 				return NextResponse.json({ message: "Not a valid file" }, { status: 400 });
 			}
-			
-			return await downloadToComputer(file);;
-		
+
+			return await downloadToComputer(file);
+
 		case "searchFiles":
 			let search = req.nextUrl.searchParams.get("search");
-			if(search === null){
+			if (search === null) {
 				return NextResponse.json({ message: "Please enter a search term" }, { status: 400 });
 			}
 			return await searchFiles(search);
@@ -143,23 +143,40 @@ async function downloadMP3(url: string) {
 }
 
 async function downloadToComputer(file: string) {
-	let filepath = path.join(directName, "mp3", file);
-	if (!fs.existsSync(filepath)) {
-		return NextResponse.json({ message: "File not found" }, { status: 404 });
-	}
-	//send file to user
-	let fileBuffer = readFileSync(filepath);
-	
-	let headers = {
-		"Content-Type": "audio/mpeg",
-		"Content-Disposition": `attachment; filename=${file}`
-	};
 
-	return new Response(fileBuffer, { headers: headers });
+	//use URI encoding to handle special characters
+	try {
+		// Decode file name to handle special characters
+		const decodedFile = decodeURIComponent(file);
+
+		// Construct the file path
+		const filepath = path.join(directName, "mp3", decodedFile);
+
+		// Check if the file exists
+		if (!fs.existsSync(filepath)) {
+			return NextResponse.json({ message: "File not found" }, { status: 404 });
+		}
+
+		// Read the file as a buffer
+		const fileBuffer = readFileSync(filepath);
+
+		// Set response headers
+		const headers = {
+			"Content-Type": "audio/mpeg",
+			// Encode the filename for Content-Disposition header
+			"Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(decodedFile)}`,
+		};
+
+		// Return the file as a response
+		return new Response(fileBuffer, { headers });
+	} catch (error) {
+		console.error("Error downloading file:", error);
+		return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+	}
 }
 
 async function searchFiles(search: string) {
 	let files = fs.readdirSync(path.join(directName, "mp3"));
 	console.log(files);
-	return { message: "Files \n" + files, status: 200}
+	return { message: "Files \n" + files, status: 200 };
 }

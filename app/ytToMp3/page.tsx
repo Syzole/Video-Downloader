@@ -4,47 +4,54 @@ import { useState, useEffect, ReactNode } from "react";
 
 //first set up page
 
+let files: string[] = [];
+
 export default function Page() {
-	const [files, setFiles] = useState([]);
-	const [loading, setLoading] = useState(true);
 	const [filesToRender, setFilesToRender] = useState<ReactNode>(<h1 className="font-sans text-xl">Loading...</h1>);
 	//fetch the files from the server on page load
 
 	async function fetchFiles() {
 		try {
-			let files = await GetFiles();
-			setFiles(files);
-			if (files.length === 0) {
-				setFilesToRender(<h1 className="font-sans text-xl">No files have been converted to MP3</h1>);
-			} else {
-				setFilesToRender(
-					<ul className="list-disc list-inside">
-						{files.map((file: string, index: number) => (
-							<li
-								key={index}
-								className="font-sans text-xl"
-							>
-								<a
-									href={`/api/convertToMp3/downloadMP3?file=${file}`}
-									className="text-blue-500 hover:underline"
-								>
-									{file}
-								</a>
-							</li>
-						))}
-					</ul>
-				);
-			}
+			files = await GetFiles();
 		} catch (e) {
 			console.error(e);
-		} finally {
-			setLoading(false); // Set loading to false when fetch completes
+		}
+	}
+
+	async function renderFiles(files: string[]) {
+		let searchBar = document.getElementById("searchBar") as HTMLInputElement;
+		if (files.length === 0) {
+			await setFilesToRender(<h1 className="font-sans text-xl">No files have been converted to MP3</h1>);
+			searchBar.disabled = true;
+		} else {
+			await setFilesToRender(
+				<ul className="list-disc list-inside">
+					{files.map((file: string, index: number) => (
+						<li
+							key={index}
+							className="font-sans text-xl"
+						>
+							<a
+								href={`/api/convertToMp3/downloadMP3?file=${file}`}
+								className="text-blue-500 hover:underline"
+							>
+								{file}
+							</a>
+						</li>
+					))}
+				</ul>
+			);
+			searchBar.disabled = false;
 		}
 	}
 
 	//onload fetch the files
 	useEffect(() => {
-		fetchFiles();
+		const fetchAndRenderFiles = async () => {
+			await fetchFiles();
+			await renderFiles(files);
+		};
+		fetchAndRenderFiles();
 	}, []);
 
 	return (
@@ -102,6 +109,10 @@ export default function Page() {
 					type="text"
 					className="grow"
 					placeholder="Search"
+					id="searchBar"
+					onChange={(e) => {
+						searchFiles(e.target.value);
+					}}
 				/>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -129,15 +140,18 @@ export default function Page() {
 		downloadButton.disabled = true;
 
 		//display a message to the user
-		alert("Your request is being processed. Please wait...");
 
 		let url = urlBox.value;
-		console.log(url);
+		console.log("URL: " + url);
 
 		if (!url) {
 			alert("Please enter a URL");
+			urlBox.disabled = false;
+			downloadButton.disabled = false;
 			return;
 		}
+
+		alert("Your request is being processed. Please wait...");
 
 		let response = await fetch("/api/convertToMp3/downloadMP3", {
 			method: "POST",
@@ -157,29 +171,31 @@ export default function Page() {
 
 		urlBox.disabled = false;
 		downloadButton.disabled = false;
-		fetchFiles();
+		await fetchFiles();
+		await renderFiles(files);
+	}
+
+	function searchFiles(searchTerm: string) {
+		console.log("searching for: " + searchTerm);
+		let filteredFiles = files.filter((file) => file.toLowerCase().includes(searchTerm.toLowerCase()));
+		if (filteredFiles.length === 0) {
+			setFilesToRender(<h1 className="font-sans text-xl">No files found</h1>);
+			return;
+		}
+		renderFiles(filteredFiles);
 	}
 }
 
 //this function is used to test the API and other features
-async function GetFiles(){
+async function GetFiles(): Promise<string[]> {
 	let response = await fetch("/api/convertToMp3/getFiles", {
 		method: "GET",
 	});
 
-	let files = (await response.json()).files;
+	let files: string[] = (await response.json()).files;
 	console.log(files);
 
 	return files;
 }
 
-async function searchFiles(search: string) {
-	let response = await fetch(`/api/convertToMp3/searchFiles?search=${search}`, {
-		method: "GET",
-	});
 
-	let files = (await response.json()).files;
-	//console.log(files);
-
-	return files;
-}
