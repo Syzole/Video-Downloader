@@ -37,8 +37,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 			if (!file) {
 				return NextResponse.json({ message: "Not a valid file" }, { status: 400 });
 			}
-			let response = await downloadToComputer(file);
-			return response;
+			
+			return await downloadToComputer(file);;
+		
+		case "searchFiles":
+			let search = req.nextUrl.searchParams.get("search");
+			if(search === null){
+				return NextResponse.json({ message: "Please enter a search term" }, { status: 400 });
+			}
+			return await searchFiles(search);
 
 		default:
 			console.log("Invalid ID");
@@ -138,7 +145,7 @@ async function downloadMP3(url: string) {
 async function downloadToComputer(file: string) {
 	let filepath = path.join(directName, "mp3", file);
 	if (!fs.existsSync(filepath)) {
-		return { message: "File not found", status: 404 };
+		return NextResponse.json({ message: "File not found" }, { status: 404 });
 	}
 	//send file to user
 	let fileBuffer = readFileSync(filepath);
@@ -149,4 +156,10 @@ async function downloadToComputer(file: string) {
 	};
 
 	return new Response(fileBuffer, { headers: headers });
+}
+
+async function searchFiles(search: string) {
+	let files = fs.readdirSync(path.join(directName, "mp3"));
+	console.log(files);
+	return { message: "Files \n" + files, status: 200}
 }

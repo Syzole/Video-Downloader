@@ -4,7 +4,6 @@ import { useState, useEffect, ReactNode } from "react";
 
 //first set up page
 
-
 export default function Page() {
 	const [files, setFiles] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -43,6 +42,7 @@ export default function Page() {
 		}
 	}
 
+	//onload fetch the files
 	useEffect(() => {
 		fetchFiles();
 	}, []);
@@ -96,6 +96,26 @@ export default function Page() {
 			</button>
 			<br />
 			<h1 className="font-sans font-bold underline justify-start text-xl"> Files that have been converted to MP3</h1>
+			<br />
+			<label className="input input-bordered flex items-center gap-2">
+				<input
+					type="text"
+					className="grow"
+					placeholder="Search"
+				/>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="currentColor"
+					className="w-4 h-4 opacity-70"
+				>
+					<path
+						fillRule="evenodd"
+						d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+						clipRule="evenodd"
+					/>
+				</svg>
+			</label>
+			<br />
 			<div className="flex flex-col">{filesToRender}</div>
 		</div>
 	);
@@ -142,8 +162,19 @@ export default function Page() {
 }
 
 //this function is used to test the API and other features
-async function GetFiles() {
+async function GetFiles(){
 	let response = await fetch("/api/convertToMp3/getFiles", {
+		method: "GET",
+	});
+
+	let files = (await response.json()).files;
+	console.log(files);
+
+	return files;
+}
+
+async function searchFiles(search: string) {
+	let response = await fetch(`/api/convertToMp3/searchFiles?search=${search}`, {
 		method: "GET",
 	});
 
@@ -152,5 +183,3 @@ async function GetFiles() {
 
 	return files;
 }
-
-
