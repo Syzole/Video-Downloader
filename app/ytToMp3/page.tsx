@@ -18,22 +18,28 @@ export default function Page() {
 		}
 	}
 
-	async function renderFiles(files: string[]) {
+	async function renderFiles(array: string[]) {
 		let searchBar = document.getElementById("searchBar") as HTMLInputElement;
-		if (files.length === 0) {
+		if (array.length === 0) {
 			await setFilesToRender(<h1 className="font-sans text-xl">No files have been converted to MP3</h1>);
 			searchBar.disabled = true;
 		} else {
 			await setFilesToRender(
 				<ul className="list-disc list-inside">
-					{files.map((file: string, index: number) => (
+					{array.map((file: string, index: number) => (
 						<li
 							key={index}
 							className="font-sans text-xl"
 						>
 							<a
-								href={`/api/convertToMp3/downloadMP3?file=${file}`}
+								href={`#`}
 								className="text-blue-500 hover:underline"
+								onClick={async (e) => {
+									e.preventDefault();
+									window.open(`/api/convertToMp3/downloadMP3?file=${file}`, "_blank");
+									await fetchFiles();
+									await renderFiles(files);
+								}}
 							>
 								{file}
 							</a>
@@ -197,5 +203,3 @@ async function GetFiles(): Promise<string[]> {
 
 	return files;
 }
-
-

@@ -40,13 +40,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 			return await downloadToComputer(file);
 
-		case "searchFiles":
-			let search = req.nextUrl.searchParams.get("search");
-			if (search === null) {
-				return NextResponse.json({ message: "Please enter a search term" }, { status: 400 });
-			}
-			return await searchFiles(search);
-
 		default:
 			console.log("Invalid ID");
 			return NextResponse.json({ message: id }, { status: 400 });
@@ -167,16 +160,12 @@ async function downloadToComputer(file: string) {
 			"Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(decodedFile)}`,
 		};
 
-		// Return the file as a response
+		//delete file after download
+		//fs.unlinkSync(filepath);
+
 		return new Response(fileBuffer, { headers });
 	} catch (error) {
 		console.error("Error downloading file:", error);
 		return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
 	}
-}
-
-async function searchFiles(search: string) {
-	let files = fs.readdirSync(path.join(directName, "mp3"));
-	console.log(files);
-	return { message: "Files \n" + files, status: 200 };
 }
