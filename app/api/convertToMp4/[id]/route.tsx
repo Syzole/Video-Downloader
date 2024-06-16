@@ -42,7 +42,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 		default:
 			console.log("Invalid ID");
-			return NextResponse.json({ message: id }, { status: 400 });
+			return NextResponse.json({ message: "Invalid route for this api" }, { status: 400 });
 	}
 }
 
@@ -66,3 +66,45 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 }
 
 //helper functions go here
+
+async function downloadMP4(url: string) {
+	if (!ytdl.validateURL(url)) {
+		return { message: "Not a valid YouTube URL", status: 400 };
+	}
+	let info = await ytdl.getInfo(url);
+	let stream = ytdl(url, {
+		quality: "highestvideo",
+		filter: "audioandvideo",
+	});
+
+	//create file/filename
+	let filename = info.videoDetails.title;
+	let filepath = path.join(directName, "mp4", filename + ".mp4");
+
+	//download the video using ffmpeg
+
+	try {
+        await new Promise((resolve, reject) => {
+            ffmpeg(stream)
+                .outputOptions(["-c:v copy", "-c:a copy"])
+                .output(filepath)
+                .on("end", () => {
+                    console.log("Downloaded MP4");
+                })
+                .on("error", (err) => {
+                    console.log(err);
+                    reject(err);
+                })
+                .run();
+        });
+	} catch (e) {
+		console.log(e);
+		return { message: "Error downloading MP4", status: 500 };
+	}
+
+	return { message: "Downloaded MP4", status: 200 };
+}
+
+async function downloadToComputer(file: string) {
+	//TODO: download the file to the computer
+}
