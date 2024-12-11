@@ -105,7 +105,7 @@ async function downloadMP3(url: string) {
 		//console.log(info.videoDetails.title);
 		//console.log(info.videoDetails.author.name);
 
-		let thumbnailURL = info.videoDetails.thumbnails[0].url;
+		let thumbnailURL = info.videoDetails.thumbnails[ 0 ].url;
 		let thumbnail = await axios.get(thumbnailURL, { responseType: "arraybuffer" });
 
 		let thumbnailBuffer = Buffer.from(thumbnail.data);
@@ -114,7 +114,7 @@ async function downloadMP3(url: string) {
 
 		writer //set metadata
 			.setFrame("TIT2", info.videoDetails.title)
-			.setFrame("TPE1", [info.videoDetails.author.name])
+			.setFrame("TPE1", [ info.videoDetails.author.name ])
 			.setFrame("TALB", info.videoDetails.title)
 			.setFrame("TPE2", info.videoDetails.author.name)
 			.setFrame("APIC", {
@@ -126,7 +126,7 @@ async function downloadMP3(url: string) {
 		writer.addTag();
 		//console.log(writer);
 		let taggedSongBuffer = Buffer.from((writer as any).arrayBuffer); // Type assertion(funny typescript stuff)
-		await writeFileSync(filepath, taggedSongBuffer);
+		writeFileSync(filepath, new Uint8Array(taggedSongBuffer));
 	} catch (e) {
 		console.log(e);
 		return { message: e, status: 500 };
