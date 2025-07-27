@@ -7,7 +7,7 @@ import { useState, useEffect, ReactNode } from "react";
 let files: string[] = [];
 
 export default function Page() {
-	const [filesToRender, setFilesToRender] = useState<ReactNode>(<h1 className="font-sans text-xl">Loading...</h1>);
+	const [ filesToRender, setFilesToRender ] = useState<ReactNode>(<h1 className="font-sans text-xl">Loading...</h1>);
 	//fetch the files from the server on page load
 
 	async function fetchFiles() {
@@ -21,31 +21,46 @@ export default function Page() {
 	async function renderFiles(array: string[]) {
 		let searchBar = document.getElementById("searchBar") as HTMLInputElement;
 		if (array.length === 0) {
-			await setFilesToRender(<h1 className="font-sans text-xl">No files have been converted to MP3</h1>);
+			setFilesToRender(
+				<div className="text-center py-12">
+					<div className="text-6xl mb-4">📂</div>
+					<h3 className="text-2xl font-bold text-white mb-2">No Files Yet</h3>
+					<p className="text-gray-400">Convert your first YouTube video to MP3!</p>
+				</div>
+			);
 			searchBar.disabled = true;
 		} else {
-			await setFilesToRender(
-				<ul className="list-disc list-inside">
-					{array.map((file: string, index: number) => (
-						<li
-							key={index}
-							className="font-sans text-xl"
+			setFilesToRender(
+				<div className="space-y-3">
+					{ array.map((file: string, index: number) => (
+						<div
+							key={ index }
+							className="bg-white/10 hover:bg-white/20 rounded-xl p-4 border border-white/20 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
 						>
-							<a
-								href={`#`}
-								className="text-blue-500 hover:underline"
-								onClick={async (e) => {
-									e.preventDefault();
-									window.open(`/api/convertToMp3/downloadMP3?file=${file}`, "_blank");
-									await fetchFiles();
-									await renderFiles(files);
-								}}
-							>
-								{file}
-							</a>
-						</li>
-					))}
-				</ul>
+							<div className="flex items-center justify-between">
+								<div className="flex items-center space-x-3 flex-1 min-w-0">
+									<div className="text-2xl">🎵</div>
+									<div className="flex-1 min-w-0">
+										<p className="text-white font-medium truncate">{ file }</p>
+										<p className="text-gray-400 text-sm">MP3 Audio File</p>
+									</div>
+								</div>
+								<button
+									className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform group-hover:scale-105 flex items-center space-x-2"
+									onClick={ async (e) => {
+										e.preventDefault();
+										window.open(`/api/convertToMp3/downloadMP3?file=${file}`, "_blank");
+										await fetchFiles();
+										await renderFiles(files);
+									} }
+								>
+									<span>📥</span>
+									<span>Download</span>
+								</button>
+							</div>
+						</div>
+					)) }
+				</div>
 			);
 			searchBar.disabled = false;
 		}
@@ -61,79 +76,141 @@ export default function Page() {
 	}, []);
 
 	return (
-		<div className="flex flex-col justify-center p-8">
-			<div className="navbar bg-base-100">
-				<a
-					className="btn btn-info text-xl"
-					href="/"
-				>
-					Home
-				</a>
-			</div>
-			<h1 className="font-sans self-center p-8 text-xl">
-				Below in the text box, add a{" "}
-				<a
-					href="https://www.youtube.com/"
-					className="text-blue-600"
-					onClickCapture={(e) => e.preventDefault()}
-					onClick={(e) => window.open(e.currentTarget.href, "_blank")}
-				>
-					{" "}
-					Youtube
-				</a>{" "}
-				or a{" "}
-				<a
-					href="https://music.youtube.com/"
-					className="text-blue-600"
-					onClickCapture={(e) => e.preventDefault()}
-					onClick={(e) => window.open(e.currentTarget.href, "_blank")}
-				>
-					{" "}
-					Youtube Music{" "}
-				</a>
-				URL and it will be converted to an MP3 file ready to downloaded
-			</h1>
-			<input
-				type="text"
-				id="ytUrl"
-				placeholder="Youtube URL"
-				className="input input-md input-primary mb-5"
-			/>
-			<button
-				className="btn btn-accent justify-center mb-4"
-				onClick={Download}
-				id="downloadButton"
-			>
-				{" "}
-				Download
-			</button>
-			<br />
-			<h1 className="font-sans font-bold underline justify-start text-xl"> Files that have been converted to MP3</h1>
-			<br />
-			<label className="input input-bordered flex items-center gap-2">
-				<input
-					type="text"
-					className="grow"
-					placeholder="Search"
-					id="searchBar"
-					onChange={(e) => {
-						searchFiles(e.target.value);
-					}}
-				/>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="currentColor"
-					className="w-4 h-4 opacity-70"
-				>
-					<path
-						fillRule="evenodd"
-						d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-						clipRule="evenodd"
-					/>
-				</svg>
-			</label>
-			<br />
-			<div className="flex flex-col">{filesToRender}</div>
+		<div
+			data-theme="dark"
+			className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-pink-900"
+		>
+			{/* Header */ }
+			<header className="bg-gradient-to-r from-red-600 to-pink-600 shadow-2xl">
+				<div className="container mx-auto px-6 py-8">
+					<div className="flex items-center justify-between">
+						<a
+							href="/"
+							className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:-translate-y-1 shadow-lg border border-white/20"
+						>
+							🏠 Home
+						</a>
+						<div className="text-center">
+							<h1 className="text-4xl md:text-5xl font-bold text-white">
+								🎵 YouTube to MP3
+							</h1>
+							<p className="text-red-100 mt-2">Convert videos to high-quality audio</p>
+						</div>
+						<div className="w-24"></div> {/* Spacer for centering */ }
+					</div>
+				</div>
+			</header>
+
+			{/* Main Content */ }
+			<main className="container mx-auto px-6 py-12">
+				{/* URL Input Section */ }
+				<div className="max-w-4xl mx-auto mb-16">
+					<div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12">
+						<div className="text-center mb-8">
+							<h2 className="text-3xl font-bold text-white mb-4">
+								Enter YouTube URL
+							</h2>
+							<p className="text-xl text-gray-300 leading-relaxed">
+								Paste a{ " " }
+								<a
+									href="https://www.youtube.com/"
+									className="text-red-400 hover:text-red-300 underline decoration-red-400 hover:decoration-red-300 transition-colors"
+									onClickCapture={ (e) => e.preventDefault() }
+									onClick={ (e) => window.open(e.currentTarget.href, "_blank") }
+								>
+									YouTube
+								</a>{ " " }
+								or{ " " }
+								<a
+									href="https://music.youtube.com/"
+									className="text-red-400 hover:text-red-300 underline decoration-red-400 hover:decoration-red-300 transition-colors"
+									onClickCapture={ (e) => e.preventDefault() }
+									onClick={ (e) => window.open(e.currentTarget.href, "_blank") }
+								>
+									YouTube Music
+								</a>{ " " }
+								URL below to convert it to an MP3 file
+							</p>
+						</div>
+
+						<div className="space-y-6">
+							<div className="relative">
+								<input
+									type="text"
+									id="ytUrl"
+									placeholder="https://www.youtube.com/watch?v=..."
+									className="w-full bg-white/10 border border-white/30 rounded-xl px-6 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent text-lg backdrop-blur-sm"
+								/>
+								<div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-xl pointer-events-none"></div>
+							</div>
+
+							<button
+								className="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all duration-300 text-lg"
+								onClick={ Download }
+								id="downloadButton"
+							>
+								🎵 Convert to MP3
+							</button>
+						</div>
+
+						{/* Progress indicators */ }
+						<div className="grid md:grid-cols-3 gap-4 mt-8">
+							<div className="bg-white/5 rounded-lg p-4 text-center border border-white/10">
+								<div className="text-2xl mb-2">📥</div>
+								<p className="text-gray-300 text-sm">1. Paste URL</p>
+							</div>
+							<div className="bg-white/5 rounded-lg p-4 text-center border border-white/10">
+								<div className="text-2xl mb-2">⚡</div>
+								<p className="text-gray-300 text-sm">2. Convert</p>
+							</div>
+							<div className="bg-white/5 rounded-lg p-4 text-center border border-white/10">
+								<div className="text-2xl mb-2">📦</div>
+								<p className="text-gray-300 text-sm">3. Download</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				{/* Files Section */ }
+				<div className="max-w-6xl mx-auto">
+					<div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12">
+						<div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+							<h2 className="text-3xl font-bold text-white mb-4 md:mb-0">
+								📁 Converted Files
+							</h2>
+
+							{/* Search Bar */ }
+							<div className="relative max-w-md w-full">
+								<input
+									type="text"
+									className="w-full bg-white/10 border border-white/30 rounded-xl px-6 py-3 pl-12 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent backdrop-blur-sm"
+									placeholder="Search files..."
+									id="searchBar"
+									onChange={ (e) => {
+										searchFiles(e.target.value);
+									} }
+								/>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="currentColor"
+									className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2"
+								>
+									<path
+										fillRule="evenodd"
+										d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+										clipRule="evenodd"
+									/>
+								</svg>
+							</div>
+						</div>
+
+						{/* Files List */ }
+						<div className="bg-white/5 rounded-2xl p-6 border border-white/10 min-h-[200px]">
+							{ filesToRender }
+						</div>
+					</div>
+				</div>
+			</main>
 		</div>
 	);
 
@@ -185,7 +262,13 @@ export default function Page() {
 		console.log("searching for: " + searchTerm);
 		let filteredFiles = files.filter((file) => file.toLowerCase().includes(searchTerm.toLowerCase()));
 		if (filteredFiles.length === 0) {
-			setFilesToRender(<h1 className="font-sans text-xl">No files found</h1>);
+			setFilesToRender(
+				<div className="text-center py-12">
+					<div className="text-6xl mb-4">🔍</div>
+					<h3 className="text-2xl font-bold text-white mb-2">No Files Found</h3>
+					<p className="text-gray-400">Try adjusting your search terms</p>
+				</div>
+			);
 			return;
 		}
 		renderFiles(filteredFiles);

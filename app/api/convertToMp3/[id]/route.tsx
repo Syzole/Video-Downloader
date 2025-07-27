@@ -25,7 +25,7 @@ if (!fs.existsSync(directName)) {
 }
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+	const id = (await params).id;
 	switch (id) {
 		case "getFiles":
 			let files = fs.readdirSync(path.join(directName, "mp3"));
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
-	const id = params.id;
+	const id = (await params).id;
 	console.log(id);
 
 	switch (id) {
@@ -100,7 +100,8 @@ async function downloadMP3(url: string) {
 
 		//add metadata to the mp3 file
 		let songBuffer = readFileSync(filepath);
-		let writer = new ID3Writer(songBuffer);
+		let arrayBuffer = songBuffer.buffer.slice(songBuffer.byteOffset, songBuffer.byteOffset + songBuffer.byteLength);
+		let writer = new ID3Writer(arrayBuffer);
 
 		//console.log(info.videoDetails.title);
 		//console.log(info.videoDetails.author.name);
@@ -116,12 +117,14 @@ async function downloadMP3(url: string) {
 			.setFrame("TIT2", info.videoDetails.title)
 			.setFrame("TPE1", [ info.videoDetails.author.name ])
 			.setFrame("TALB", info.videoDetails.title)
-			.setFrame("TPE2", info.videoDetails.author.name)
-			.setFrame("APIC", {
-				type: 3,
-				data: jpegBuffer,
-				description: "Thumbnail",
-			});
+			.setFrame("TPE2", info.videoDetails.author.name);
+		
+		// Add image separately using the correct method
+		writer.setFrame("APIC", {
+			type: 3, // 3 is for cover front
+			data: jpegBuffer,
+			description: "Thumbnail",
+		} as any); // Type assertion to bypass TypeScript restriction
 
 		writer.addTag();
 		//console.log(writer);
